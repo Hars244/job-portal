@@ -7,6 +7,7 @@ import {
   setRefreshTokenCookie,
   clearRefreshTokenCookie,
 } from '../utils/generateTokens';
+import { sendWelcomeEmail } from '../services/email.service';
 
 interface AuthRequest extends Request {
   user?: {
@@ -38,7 +39,7 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
 
   user.refreshToken = refreshToken;
   await user.save();
-
+  sendWelcomeEmail(user.email, user.name, user.role);
   setRefreshTokenCookie(res, refreshToken);
 
   res.status(201).json({

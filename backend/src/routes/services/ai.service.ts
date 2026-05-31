@@ -19,6 +19,7 @@ const chat = async (prompt: string): Promise<string> => {
   return response.choices[0].message.content || '';
 };
 
+// ── Resume Analyzer ────────────────────────────────────────
 export const analyzeResume = async (
   resumeText: string,
   jobDescription: string,
@@ -50,6 +51,7 @@ Respond with exactly this JSON structure:
   return parseJSON(text);
 };
 
+// ── Smart Job Matching ─────────────────────────────────────
 export const getJobMatches = async (
   userProfile: {
     skills: string[];
@@ -85,6 +87,7 @@ Sort by matchScore descending.`;
   return parseJSON(text);
 };
 
+// ── JD Generator ───────────────────────────────────────────
 export const generateJobDescription = async (input: {
   title: string;
   industry: string;
@@ -125,6 +128,7 @@ Respond with exactly this JSON structure:
   return parseJSON(text);
 };
 
+// ── Interview Prep Bot ─────────────────────────────────────
 export const generateInterviewQuestions = async (
   jobTitle: string,
   jobDescription: string,

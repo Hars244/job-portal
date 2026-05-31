@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
-
+import PostJobPage from './pages/dashboard/PostJobPage'
+import ProfilePage from './pages/dashboard/ProfilePage'
+import AnalyticsPage from './pages/dashboard/AnalyticsPage'
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -57,6 +59,26 @@ export default function App() {
         <Route path="/dashboard/recruiter/*" element={
           <ProtectedRoute roles={['recruiter', 'admin']}>
             <RecruiterDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/recruiter/post-job" element={
+          <ProtectedRoute roles={['recruiter', 'admin']}>
+            <PostJobPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/jobseeker/profile" element={
+          <ProtectedRoute roles={['jobseeker']}>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/recruiter/profile" element={
+          <ProtectedRoute roles={['recruiter', 'admin']}>
+            <ProfilePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/recruiter/analytics" element={
+          <ProtectedRoute roles={['recruiter', 'admin']}>
+            <AnalyticsPage />
           </ProtectedRoute>
         } />
       </Route>

@@ -103,12 +103,20 @@ export default function RecruiterDashboard() {
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your job postings and applications</p>
           </div>
-          <Link
-            to="/dashboard/recruiter/post-job"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors"
-          >
-            <Plus className="w-5 h-5" /> Post a Job
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/dashboard/recruiter/analytics"
+              className="flex items-center gap-2 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 px-5 py-2.5 rounded-xl font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              <TrendingUp className="w-5 h-5" /> Analytics
+            </Link>
+            <Link
+              to="/dashboard/recruiter/post-job"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors"
+            >
+              <Plus className="w-5 h-5" /> Post a Job
+            </Link>
+          </div>
         </div>
 
         {/* Stats */}
@@ -140,11 +148,10 @@ export default function RecruiterDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
                   ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
-              }`}
+                }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}

@@ -9,6 +9,7 @@ import jobRoutes         from './routes/job.routes';
 import applicationRoutes from './routes/application.routes';
 import companyRoutes     from './routes/company.routes';
 import aiRoutes from './routes/ai.routes';
+import userRoutes from './routes/user.routes';
 
 const app: Application = express();
 
@@ -38,6 +39,7 @@ app.use('/api/v1/jobs',         jobRoutes);
 app.use('/api/v1/applications', applicationRoutes);
 app.use('/api/v1/companies',    companyRoutes);
 app.use('/api/v1/ai',           aiRoutes);
+app.use('/api/v1/users', userRoutes);
 
 // ── 404 handler ────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

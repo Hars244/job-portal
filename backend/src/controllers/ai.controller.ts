@@ -84,7 +84,7 @@ export const smartJobMatch = async (req: AuthRequest, res: Response): Promise<vo
   );
 
   // Attach full job details to matches
-  const enrichedMatches = matches.map((match) => ({
+  const enrichedMatches = matches.map((match: any) => ({
     ...match,
     job: jobs.find((j) => j._id.toString() === match.jobId),
   }));

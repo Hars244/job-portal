@@ -11,7 +11,10 @@ const jobTypes = ['full-time', 'part-time', 'contract', 'internship', 'freelance
 const experienceLevels = ['entry', 'mid', 'senior', 'lead', 'executive']
 
 function JobCard({ job }: { job: Job }) {
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
+  const [saved, setSaved] = useState(() =>
+    user?.savedJobs?.includes(job._id) || false
+  )
 
   const handleSave = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -20,8 +23,9 @@ function JobCard({ job }: { job: Job }) {
       return
     }
     try {
-      await api.post(`/users/save-job/${job._id}`)
-      toast.success('Job saved!')
+      const res = await api.post(`/users/save-job/${job._id}`)
+      setSaved(res.data.saved)
+      toast.success(res.data.message)
     } catch {
       toast.error('Failed to save job')
     }
@@ -29,7 +33,7 @@ function JobCard({ job }: { job: Job }) {
 
   const formatSalary = (salary: Job['salary']) => {
     if (!salary.isVisible || (!salary.min && !salary.max)) return null
-    const format = (n: number) => n >= 100000 ? `${(n/100000).toFixed(1)}L` : `${(n/1000).toFixed(0)}K`
+    const format = (n: number) => n >= 100000 ? `${(n / 100000).toFixed(1)}L` : `${(n / 1000).toFixed(0)}K`
     if (salary.min && salary.max) return `₹${format(salary.min)} - ₹${format(salary.max)}`
     if (salary.min) return `₹${format(salary.min)}+`
     return null
@@ -64,9 +68,12 @@ function JobCard({ job }: { job: Job }) {
           </div>
           <button
             onClick={handleSave}
-            className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex-shrink-0"
+            className={`p-2 rounded-lg transition-colors flex-shrink-0 ${saved
+                ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+              }`}
           >
-            <Bookmark className="w-5 h-5" />
+            <Bookmark className={`w-5 h-5 ${saved ? 'fill-current' : ''}`} />
           </button>
         </div>
 

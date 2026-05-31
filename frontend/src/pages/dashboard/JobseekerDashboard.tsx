@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom'
 import {
   Briefcase, FileText, Brain, BookmarkCheck,
   TrendingUp, Clock, CheckCircle, XCircle,
-  ChevronRight, Loader2, User, Upload
+  ChevronRight, Loader2, User, Upload, Building2
 } from 'lucide-react'
 import api from '../../api/axios'
 import { useAuthStore } from '../../store/authStore'
 import type { Application } from '../../types'
+import toast from 'react-hot-toast'
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -17,7 +18,190 @@ const statusColors: Record<string, string> = {
   rejected: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
   hired: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
 }
+function ResumeAnalyzerTool() {
+  const [resumeText, setResumeText] = useState('')
+  const [jobId, setJobId] = useState('')
+  const [analyzing, setAnalyzing] = useState(false)
+  const [result, setResult] = useState<any>(null)
 
+  const { data: jobs } = useQuery({
+    queryKey: ['jobs-for-analyzer'],
+    queryFn: async () => {
+      const res = await api.get('/jobs')
+      return res.data.jobs
+    },
+  })
+
+  const handleAnalyze = async () => {
+    if (!resumeText || !jobId) {
+      toast.error('Please select a job and paste your resume')
+      return
+    }
+    setAnalyzing(true)
+    try {
+      const res = await api.post('/ai/resume-analyze', { resumeText, jobId })
+      setResult(res.data.analysis)
+      toast.success('Resume analyzed!')
+    } catch {
+      toast.error('Failed to analyze resume')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Job selector */}
+      <div>
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 block">
+          Select Job to match against
+        </label>
+        <select
+          value={jobId}
+          onChange={e => setJobId(e.target.value)}
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">Select a job...</option>
+          {jobs?.map((job: any) => (
+            <option key={job._id} value={job._id}>{job.title} — {job.company?.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Resume text */}
+      <div>
+        <label className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1 block">
+          Paste your resume text
+        </label>
+        <textarea
+          value={resumeText}
+          onChange={e => setResumeText(e.target.value)}
+          rows={4}
+          placeholder="Paste your resume content here..."
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+        />
+      </div>
+
+      <button
+        onClick={handleAnalyze}
+        disabled={analyzing || !resumeText || !jobId}
+        className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition"
+      >
+        {analyzing ? (
+          <><Loader2 className="w-4 h-4 animate-spin" /> Analyzing...</>
+        ) : (
+          <><FileText className="w-4 h-4" /> Analyze Resume</>
+        )}
+      </button>
+
+      {/* Results */}
+      {result && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 space-y-3">
+          {/* Score */}
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-gray-900 dark:text-white">Match Score</span>
+            <div className="flex items-center gap-2">
+              <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${result.score >= 70 ? 'bg-green-500' : result.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                  style={{ width: `${result.score}%` }}
+                />
+              </div>
+              <span className={`text-lg font-bold ${result.score >= 70 ? 'text-green-600' : result.score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                {result.score}/100
+              </span>
+            </div>
+          </div>
+
+          {/* Summary */}
+          <p className="text-sm text-gray-600 dark:text-gray-400">{result.summary}</p>
+
+          {/* Strengths */}
+          <div>
+            <h4 className="text-xs font-semibold text-green-600 uppercase mb-1.5">✅ Strengths</h4>
+            <ul className="space-y-1">
+              {result.strengths?.map((s: string, i: number) => (
+                <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
+                  <span className="text-green-500 mt-0.5">•</span> {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Gaps */}
+          <div>
+            <h4 className="text-xs font-semibold text-red-500 uppercase mb-1.5">❌ Gaps</h4>
+            <ul className="space-y-1">
+              {result.gaps?.map((g: string, i: number) => (
+                <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
+                  <span className="text-red-400 mt-0.5">•</span> {g}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Suggestions */}
+          <div>
+            <h4 className="text-xs font-semibold text-blue-500 uppercase mb-1.5">💡 Suggestions</h4>
+            <ul className="space-y-1">
+              {result.suggestions?.map((s: string, i: number) => (
+                <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
+                  <span className="text-blue-400 mt-0.5">•</span> {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+function SavedJobsTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['saved-jobs'],
+    queryFn: async () => {
+      const res = await api.get('/users/saved-jobs')
+      return res.data.savedJobs
+    },
+  })
+
+  if (isLoading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-blue-600" /></div>
+
+  if (!data?.length) return (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-12 text-center">
+      <BookmarkCheck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+      <h3 className="font-semibold text-gray-900 dark:text-white mb-1">No saved jobs yet</h3>
+      <p className="text-gray-500 text-sm mb-4">Click the bookmark icon on any job to save it</p>
+      <Link to="/jobs" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
+        Browse Jobs
+      </Link>
+    </div>
+  )
+
+  return (
+    <div className="grid gap-4">
+      {data.map((job: any) => (
+        <Link key={job._id} to={`/jobs/${job._id}`}
+          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-md transition-shadow block">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">{job.title}</h3>
+                <p className="text-sm text-gray-500">{job.company?.name} · {job.location}</p>
+              </div>
+            </div>
+            <span className={`text-xs px-3 py-1 rounded-full font-medium capitalize ${job.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+              {job.status}
+            </span>
+          </div>
+        </Link>
+      ))}
+    </div>
+  )
+}
 export default function JobseekerDashboard() {
   const { user } = useAuthStore()
   const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'saved' | 'ai'>('overview')
@@ -115,11 +299,10 @@ export default function JobseekerDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
+                ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                }`}
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
@@ -317,27 +500,14 @@ export default function JobseekerDashboard() {
                   <p className="text-xs text-gray-500">Get AI feedback on your resume</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Apply to a job first, then analyze your resume against the job description to get a match score and improvement tips.
-              </p>
-              <Link to="/jobs"
-                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition">
-                <Briefcase className="w-4 h-4" /> Find Jobs to Apply
-              </Link>
+              <ResumeAnalyzerTool />
             </div>
           </div>
         )}
 
         {/* Saved Tab */}
         {activeTab === 'saved' && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-            <BookmarkCheck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">No saved jobs yet</h3>
-            <p className="text-gray-500 text-sm mb-4">Click the bookmark icon on any job to save it</p>
-            <Link to="/jobs" className="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
-              Browse Jobs
-            </Link>
-          </div>
+          <SavedJobsTab />
         )}
       </div>
     </div>

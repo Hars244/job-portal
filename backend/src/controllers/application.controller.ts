@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
 import Application from '../models/Application';
 import Job from '../models/Job';
-
+import { sendApplicationConfirmationEmail } from '../services/email.service';
+import User from '../models/User';
+import { sendStatusUpdateEmail } from '../services/email.service';
 interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -44,6 +46,15 @@ export const applyForJob = async (req: AuthRequest, res: Response): Promise<void
     statusHistory: [{ status: 'pending', changedAt: new Date() }],
   });
 
+  const applicantUser = await User.findById(req.user?.id);
+  if (applicantUser) {
+    sendApplicationConfirmationEmail(
+      applicantUser.email,
+      applicantUser.name,
+      job.title,
+      (job.company as any)?.name || 'Company'
+    );
+  }
   // Increment applications count
   await Job.findByIdAndUpdate(req.params.jobId, {
     $inc: { applicationsCount: 1 },
@@ -102,7 +113,17 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
   application.status = status;
   application.statusHistory.push({ status, changedAt: new Date(), note });
   await application.save();
-
+  const applicant = await User.findById(application.applicant);
+  const jobDoc = await Job.findById(application.job).populate('company');
+  if (applicant && jobDoc) {
+    sendStatusUpdateEmail(
+      applicant.email,
+      applicant.name,
+      jobDoc.title,
+      (jobDoc.company as any)?.name || 'Company',
+      status
+    );
+  }
   res.json({ success: true, message: 'Application status updated', application });
 };
 
