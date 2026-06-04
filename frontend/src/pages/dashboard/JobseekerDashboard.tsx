@@ -371,14 +371,15 @@ export default function JobseekerDashboard() {
 
               <div className="space-y-2">
                 {user?.resume?.url ? (
-                  <a href={user.resume.url} target="_blank" rel="noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 py-2.5 rounded-xl text-sm font-medium">
+                  <Link to="/dashboard/jobseeker/profile"
+                    className="w-full flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 py-2.5 rounded-xl text-sm font-medium hover:bg-green-100 transition">
                     <FileText className="w-4 h-4" /> Resume Uploaded ✓
-                  </a>
+                  </Link>
                 ) : (
-                  <button className="w-full flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-100 transition">
+                  <Link to="/dashboard/jobseeker/profile"
+                    className="w-full flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-100 transition">
                     <Upload className="w-4 h-4" /> Upload Resume
-                  </button>
+                  </Link>
                 )}
                 <Link to="/dashboard/jobseeker/profile"
                   className="w-full flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 py-2.5 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition">

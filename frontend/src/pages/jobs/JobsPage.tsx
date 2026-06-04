@@ -51,7 +51,6 @@ function JobCard({ job }: { job: Job }) {
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all group">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
-            {/* Company logo */}
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center flex-shrink-0">
               {job.company?.logo ? (
                 <img src={job.company.logo} alt={job.company.name} className="w-8 h-8 object-contain" />
@@ -69,8 +68,8 @@ function JobCard({ job }: { job: Job }) {
           <button
             onClick={handleSave}
             className={`p-2 rounded-lg transition-colors flex-shrink-0 ${saved
-                ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+              ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20'
+              : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20'
               }`}
           >
             <Bookmark className={`w-5 h-5 ${saved ? 'fill-current' : ''}`} />
@@ -126,27 +125,31 @@ function JobCard({ job }: { job: Job }) {
 }
 
 export default function JobsPage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const [showFilters, setShowFilters] = useState(false)
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [location, setLocation] = useState(searchParams.get('location') || '')
-  const [jobType, setJobType] = useState(searchParams.get('jobType') || '')
-  const [experienceLevel, setExperienceLevel] = useState(searchParams.get('experienceLevel') || '')
-  const [isRemote, setIsRemote] = useState(searchParams.get('isRemote') === 'true')
+  const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([])
+  const [selectedExperience, setSelectedExperience] = useState<string[]>([])
+  const [isRemote, setIsRemote] = useState(false)
+  const [minSalary, setMinSalary] = useState('')
+  const [maxSalary, setMaxSalary] = useState('')
   const [page, setPage] = useState(1)
 
   const buildQuery = () => {
     const params: any = { page, limit: 10 }
     if (search) params.search = search
     if (location) params.location = location
-    if (jobType) params.jobType = jobType
-    if (experienceLevel) params.experienceLevel = experienceLevel
+    if (selectedJobTypes.length > 0) params.jobType = selectedJobTypes[0]
+    if (selectedExperience.length > 0) params.experienceLevel = selectedExperience[0]
     if (isRemote) params.isRemote = true
+    if (minSalary) params.minSalary = minSalary
+    if (maxSalary) params.maxSalary = maxSalary
     return params
   }
 
   const { data, isLoading } = useQuery({
-    queryKey: ['jobs', search, location, jobType, experienceLevel, isRemote, page],
+    queryKey: ['jobs', search, location, selectedJobTypes, selectedExperience, isRemote, minSalary, maxSalary, page],
     queryFn: async () => {
       const res = await api.get('/jobs', { params: buildQuery() })
       return res.data
@@ -161,18 +164,18 @@ export default function JobsPage() {
   const clearFilters = () => {
     setSearch('')
     setLocation('')
-    setJobType('')
-    setExperienceLevel('')
+    setSelectedJobTypes([])
+    setSelectedExperience([])
     setIsRemote(false)
+    setMinSalary('')
+    setMaxSalary('')
     setPage(1)
   }
 
-  const hasFilters = search || location || jobType || experienceLevel || isRemote
+  const hasFilters = search || location || selectedJobTypes.length || selectedExperience.length || isRemote || minSalary || maxSalary
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-
-      {/* Search header */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <form onSubmit={handleSearch} className="flex gap-3">
@@ -191,8 +194,18 @@ export default function JobsPage() {
                 value={location}
                 onChange={e => setLocation(e.target.value)}
                 placeholder="Location..."
+                list="cities"
                 className="w-48 pl-12 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               />
+              <datalist id="cities">
+                {['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune',
+                  'Ahmedabad', 'Jaipur', 'Surat', 'Lucknow', 'Kanpur', 'Nagpur', 'Indore',
+                  'Thane', 'Bhopal', 'Visakhapatnam', 'Patna', 'Vadodara', 'Ghaziabad',
+                  'Ludhiana', 'Agra', 'Nashik', 'Faridabad', 'Noida', 'Gurgaon',
+                  'Coimbatore', 'Kochi', 'Remote'].map(city => (
+                  <option key={city} value={city} />
+                ))}
+              </datalist>
             </div>
             <button
               type="button"
@@ -210,65 +223,101 @@ export default function JobsPage() {
             </button>
           </form>
 
-          {/* Filters panel */}
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex flex-wrap gap-4">
-              <div>
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 block">Job Type</label>
-                <div className="flex flex-wrap gap-2">
-                  {jobTypes.map(type => (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">Job Type</label>
+                  <div className="space-y-1.5">
+                    {jobTypes.map(type => (
+                      <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={selectedJobTypes.includes(type)}
+                          onChange={() => setSelectedJobTypes(prev =>
+                            prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+                          )}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm capitalize text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">Experience Level</label>
+                  <div className="space-y-1.5">
+                    {experienceLevels.map(level => (
+                      <label key={level} className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={selectedExperience.includes(level)}
+                          onChange={() => setSelectedExperience(prev =>
+                            prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]
+                          )}
+                          className="w-4 h-4 text-blue-600 rounded"
+                        />
+                        <span className="text-sm capitalize text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{level}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">Salary Range</label>
+                  <div className="space-y-1.5">
+                    {[
+                      { label: 'Any', min: '', max: '' },
+                      { label: 'Under ₹3L', min: '', max: '300000' },
+                      { label: '₹3L - ₹6L', min: '300000', max: '600000' },
+                      { label: '₹6L - ₹12L', min: '600000', max: '1200000' },
+                      { label: '₹12L - ₹20L', min: '1200000', max: '2000000' },
+                      { label: '₹20L+', min: '2000000', max: '' },
+                    ].map(range => (
+                      <label key={range.label} className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name="salary"
+                          checked={minSalary === range.min && maxSalary === range.max}
+                          onChange={() => { setMinSalary(range.min); setMaxSalary(range.max) }}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{range.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">Work Mode</label>
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={isRemote}
+                        onChange={e => setIsRemote(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded"
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Remote only</span>
+                    </label>
+                  </div>
+                  {hasFilters && (
                     <button
-                      key={type}
                       type="button"
-                      onClick={() => setJobType(jobType === type ? '' : type)}
-                      className={`px-3 py-1.5 rounded-lg text-sm capitalize transition ${jobType === type ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                      onClick={clearFilters}
+                      className="mt-6 flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 font-medium transition-colors"
                     >
-                      {type}
+                      <X className="w-4 h-4" /> Clear all filters
                     </button>
-                  ))}
+                  )}
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 block">Experience</label>
-                <div className="flex flex-wrap gap-2">
-                  {experienceLevels.map(level => (
-                    <button
-                      key={level}
-                      type="button"
-                      onClick={() => setExperienceLevel(experienceLevel === level ? '' : level)}
-                      className={`px-3 py-1.5 rounded-lg text-sm capitalize transition ${experienceLevel === level ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isRemote}
-                    onChange={e => setIsRemote(e.target.checked)}
-                    className="w-4 h-4 text-blue-600 rounded"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Remote only</span>
-                </label>
-              </div>
-              {hasFilters && (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="flex items-center gap-1 text-sm text-red-500 hover:text-red-600 ml-auto"
-                >
-                  <X className="w-4 h-4" /> Clear filters
-                </button>
-              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Results */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <p className="text-gray-500 dark:text-gray-400">
@@ -309,7 +358,6 @@ export default function JobsPage() {
           </div>
         )}
 
-        {/* Pagination */}
         {data?.pagination && data.pagination.pages > 1 && (
           <div className="flex justify-center gap-2 mt-8">
             <button

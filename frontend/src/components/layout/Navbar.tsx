@@ -4,6 +4,9 @@ import { Menu, X, Briefcase, Bell, Sun, Moon, ChevronDown } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { useDarkMode } from '../../hooks/useDarkMode'
 import api from '../../api/axios'
+import { useSocket } from '../../hooks/useSocket'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore()
@@ -13,11 +16,28 @@ export default function Navbar() {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    try { await api.post('/auth/logout') } catch {}
+    try { await api.post('/auth/logout') } catch { }
     logout()
     navigate('/login')
   }
+  useSocket()
+  const queryClient = useQueryClient()
+  const [notifOpen, setNotifOpen] = useState(false)
 
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await api.get('/notifications')
+      return res.data
+    },
+    enabled: isAuthenticated,
+    refetchInterval: 30000,
+  })
+
+  const markAllRead = useMutation({
+    mutationFn: () => api.patch('/notifications/mark-all-read'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  })
   return (
     <nav className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,10 +76,74 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 {/* Notifications */}
-                <button className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-                </button>
+                {/* Notifications */}
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      setNotifOpen(!notifOpen)
+                      if (!notifOpen && notifData?.unreadCount > 0) {
+                        markAllRead.mutate()
+                      }
+                    }}
+                    className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {notifData?.unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">
+                        {notifData.unreadCount > 9 ? '9+' : notifData.unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Dropdown */}
+                  {notifOpen && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                      <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+                        {notifData?.unreadCount > 0 && (
+                          <span className="text-xs text-blue-600 cursor-pointer hover:underline"
+                            onClick={() => markAllRead.mutate()}>
+                            Mark all read
+                          </span>
+                        )}
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {notifData?.notifications?.length === 0 ? (
+                          <div className="p-6 text-center text-gray-400 text-sm">
+                            No notifications yet
+                          </div>
+                        ) : (
+                          notifData?.notifications?.map((notif: any) => (
+                            <div
+                              key={notif._id}
+                              className={`p-4 border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer ${!notif.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                              onClick={() => {
+                                if (notif.link) window.location.href = notif.link
+                                setNotifOpen(false)
+                              }}
+                            >
+                              <div className="flex items-start gap-3">
+                                <span className="text-lg">
+                                  {notif.type === 'status' ? '📋' :
+                                    notif.type === 'application' ? '📩' : '🔔'}
+                                </span>
+                                <div>
+                                  <p className="text-sm text-gray-700 dark:text-gray-300">{notif.message}</p>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    {new Date(notif.createdAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                                {!notif.read && (
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0 ml-auto" />
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* User dropdown */}
                 <div className="relative">
@@ -76,12 +160,13 @@ export default function Navbar() {
 
                   {dropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                      
                       <Link
-                        to="/dashboard"
+                        to={user?.role === 'recruiter' ? '/dashboard/recruiter/profile' : '/dashboard/jobseeker/profile'}
                         onClick={() => setDropdownOpen(false)}
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
-                        Dashboard
+                        My Profile
                       </Link>
                       <hr className="my-1 border-gray-200 dark:border-gray-700" />
                       <button
@@ -117,22 +202,24 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-4 space-y-3">
-          <Link to="/jobs" className="block text-gray-700 dark:text-gray-200 font-medium" onClick={() => setMenuOpen(false)}>Browse Jobs</Link>
-          {isAuthenticated ? (
-            <>
-              <Link to="/dashboard" className="block text-gray-700 dark:text-gray-200 font-medium" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-              <button onClick={handleLogout} className="block w-full text-left text-red-600 font-medium">Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="block text-gray-700 dark:text-gray-200 font-medium" onClick={() => setMenuOpen(false)}>Login</Link>
-              <Link to="/register" className="block text-blue-600 font-medium" onClick={() => setMenuOpen(false)}>Sign Up</Link>
-            </>
-          )}
-        </div>
-      )}
-    </nav>
+      {
+        menuOpen && (
+          <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-4 space-y-3">
+            <Link to="/jobs" className="block text-gray-700 dark:text-gray-200 font-medium" onClick={() => setMenuOpen(false)}>Browse Jobs</Link>
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard" className="block text-gray-700 dark:text-gray-200 font-medium" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                <button onClick={handleLogout} className="block w-full text-left text-red-600 font-medium">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="block text-gray-700 dark:text-gray-200 font-medium" onClick={() => setMenuOpen(false)}>Login</Link>
+                <Link to="/register" className="block text-blue-600 font-medium" onClick={() => setMenuOpen(false)}>Sign Up</Link>
+              </>
+            )}
+          </div>
+        )
+      }
+    </nav >
   )
 }

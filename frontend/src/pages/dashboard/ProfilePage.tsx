@@ -240,19 +240,50 @@ export default function ProfilePage() {
               <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
                 <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Resume</h2>
                 {user?.resume?.url ? (
-                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                    <div>
-                      <p className="font-medium text-green-700 dark:text-green-400 text-sm">✓ Resume uploaded</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{user.resume.originalName}</p>
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <p className="font-medium text-green-700 dark:text-green-400 text-sm">✓ Resume uploaded</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{user.resume.originalName}</p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          if (!confirm('Delete your resume?')) return
+                          try {
+                            await api.delete('/users/resume')
+                            updateUser({ resume: undefined })
+                            toast.success('Resume deleted!')
+                          } catch {
+                            toast.error('Failed to delete resume')
+                          }
+                        }}
+                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const response = await fetch(user.resume!.url)
+                            const blob = await response.blob()
+                            const url = window.URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = user.resume!.originalName || 'resume.pdf'
+                            document.body.appendChild(a)
+                            a.click()
+                            window.URL.revokeObjectURL(url)
+                            document.body.removeChild(a)
+                          } catch {
+                            toast.error('Download failed')
+                          }
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-sm font-medium transition"
+                      >
+                        ⬇️ Download Resume
+                      </button>
+
                     </div>
-                    <a
-                      href={user.resume.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      View
-                    </a>
                   </div>
                 ) : (
                   <label className="block">
@@ -281,7 +312,8 @@ export default function ProfilePage() {
                 )}
               </div>
             </>
-          )}
+          )
+          }
 
           {/* Submit */}
           <button
@@ -293,8 +325,8 @@ export default function ProfilePage() {
               <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
             ) : 'Save Changes'}
           </button>
-        </form>
-      </div>
-    </div>
+        </form >
+      </div >
+    </div >
   )
 }

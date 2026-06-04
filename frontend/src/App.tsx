@@ -19,6 +19,8 @@ import JobseekerDashboard from './pages/dashboard/JobseekerDashboard'
 import RecruiterDashboard from './pages/dashboard/RecruiterDashboard'
 import NotFoundPage from './pages/NotFoundPage'
 
+import CompanyProfilePage from './pages/dashboard/CompanyProfilePage'
+
 // Route guards
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?: string[] }) => {
   const { isAuthenticated, user } = useAuthStore()
@@ -82,7 +84,11 @@ export default function App() {
           </ProtectedRoute>
         } />
       </Route>
-
+      <Route path="/dashboard/recruiter/company" element={
+        <ProtectedRoute roles={['recruiter', 'admin']}>
+          <CompanyProfilePage />
+        </ProtectedRoute>
+      } />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )

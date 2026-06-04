@@ -4,6 +4,8 @@ import Job from '../models/Job';
 import { sendApplicationConfirmationEmail } from '../services/email.service';
 import User from '../models/User';
 import { sendStatusUpdateEmail } from '../services/email.service';
+import { sendNotification } from '../services/socket.service';
+
 interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -53,6 +55,12 @@ export const applyForJob = async (req: AuthRequest, res: Response): Promise<void
       applicantUser.name,
       job.title,
       (job.company as any)?.name || 'Company'
+    );
+    sendNotification(
+      job.recruiter.toString(),
+      `New application received for ${job.title}`,
+      'application',
+      `/dashboard/recruiter`
     );
   }
   // Increment applications count
@@ -122,6 +130,12 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
       jobDoc.title,
       (jobDoc.company as any)?.name || 'Company',
       status
+    );
+    sendNotification(
+      application.applicant.toString(),
+      `Your application status changed to ${status}`,
+      'status',
+      `/dashboard/jobseeker`
     );
   }
   res.json({ success: true, message: 'Application status updated', application });

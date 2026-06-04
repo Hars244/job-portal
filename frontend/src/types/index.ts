@@ -14,10 +14,11 @@ export interface User {
   company?: Company
   savedJobs: string[]
   resume?: {
-    url: string
-    originalName: string
-    uploadedAt: string
-  }
+  url: string
+  downloadUrl?: string
+  originalName: string
+  uploadedAt: string
+}
 }
 
 export interface Company {
