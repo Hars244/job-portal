@@ -11,7 +11,9 @@
 
 **A full-stack, AI-powered job portal built with the MERN stack + TypeScript**
 
-[Live Demo](#) · [Report Bug](https://github.com/Hars244/job-portal/issues) · [Request Feature](https://github.com/Hars244/job-portal/issues)
+[Live Demo](https://job-portal-j12k.vercel.app) 
+[API Health](https://job-portal-mfgk.onrender.com/api/v1/health) 
+[Report Bug](https://github.com/Hars244/job-portal/issues)
 
 </div>
 
