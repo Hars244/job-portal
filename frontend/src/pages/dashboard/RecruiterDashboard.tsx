@@ -24,7 +24,6 @@ export default function RecruiterDashboard() {
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'applications' | 'ai'>('overview')
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
-  const [showJDGenerator, setShowJDGenerator] = useState(false)
   const [jdForm, setJdForm] = useState({ title: '', industry: '', experienceLevel: 'mid', skills: '', location: '', jobType: 'full-time', additionalNotes: '' })
   const [generatedJD, setGeneratedJD] = useState<any>(null)
   const [generating, setGenerating] = useState(false)
