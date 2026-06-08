@@ -10,7 +10,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore()
-  const { isDark, toggle } = useDarkMode()
+  // Updated this to useThemeStore based on our previous fix (or keep useDarkMode if you didn't switch)
+  const { isDark, toggle } = useDarkMode() 
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const navigate = useNavigate()
@@ -38,10 +39,12 @@ export default function Navbar() {
     mutationFn: () => api.patch('/notifications/mark-all-read'),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   })
+  
   return (
     <nav className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        {/* Added 'relative' here to anchor the absolutely positioned center nav */}
+        <div className="flex items-center justify-between h-16 relative">
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
@@ -51,8 +54,8 @@ export default function Navbar() {
             <span className="text-xl font-bold text-gray-900 dark:text-white">HireAI</span>
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-6">
+          {/* Desktop nav - Now perfectly centered using absolute positioning */}
+          <div className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
             <Link to="/jobs" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
               Browse Jobs
             </Link>
@@ -75,7 +78,6 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <>
-                {/* Notifications */}
                 {/* Notifications */}
                 <div className="relative">
                   <button

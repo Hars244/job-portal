@@ -26,7 +26,7 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#050816] flex items-center justify-center transition-colors duration-300">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     )
@@ -44,30 +44,38 @@ export default function AnalyticsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#050816] dark:text-white pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Dashboard 📊</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Track your hiring performance</p>
+        <div className="mb-10">
+          <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+            Analytics Dashboard 📊
+          </h1>
+          <p className="mt-2 text-lg text-slate-600 dark:text-white/60">
+            Track your hiring performance and application trends.
+          </p>
         </div>
 
         {/* Stats cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
           {[
-            { label: 'Total Jobs', value: stats?.totalJobs || 0, icon: Briefcase, color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' },
-            { label: 'Total Applications', value: stats?.totalApplications || 0, icon: Users, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20' },
-            { label: 'Total Views', value: stats?.totalViews || 0, icon: Eye, color: 'text-green-600 bg-green-50 dark:bg-green-900/20' },
-            { label: 'Hired', value: stats?.hiredCount || 0, icon: Award, color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' },
-            { label: 'Hiring Rate', value: `${stats?.hiringRate || 0}%`, icon: TrendingUp, color: 'text-rose-600 bg-rose-50 dark:bg-rose-900/20' },
+            { label: 'Total Jobs', value: stats?.totalJobs || 0, icon: Briefcase, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10' },
+            { label: 'Applications', value: stats?.totalApplications || 0, icon: Users, color: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' },
+            { label: 'Total Views', value: stats?.totalViews || 0, icon: Eye, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10' },
+            { label: 'Hired', value: stats?.hiredCount || 0, icon: Award, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10' },
+            { label: 'Hiring Rate', value: `${stats?.hiringRate || 0}%`, icon: TrendingUp, color: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10' },
           ].map(stat => (
-            <div key={stat.label} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-5">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${stat.color}`}>
-                <stat.icon className="w-5 h-5" />
+            <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${stat.color}`}>
+                <stat.icon className="w-6 h-6" />
               </div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</div>
+              <div className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
+                {stat.value}
+              </div>
+              <div className="mt-1 text-sm font-medium text-slate-500 dark:text-white/55">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
@@ -75,36 +83,38 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
           {/* Applications over time */}
-          <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-6">Applications — Last 7 Days</h3>
-            <ResponsiveContainer width="100%" height={250}>
+          <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+            <h3 className="text-xl font-bold text-slate-950 dark:text-white mb-6">Applications — Last 7 Days</h3>
+            <ResponsiveContainer width="100%" height={280}>
               <LineChart data={filledDates}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#94a3b8' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" strokeOpacity={0.2} />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} dx={-10} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: 'none',
-                    borderRadius: '8px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
                     color: '#f8fafc',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
                   }}
+                  itemStyle={{ color: '#e2e8f0' }}
                 />
                 <Line
                   type="monotone"
                   dataKey="applications"
-                  stroke="#2563eb"
+                  stroke="#3b82f6"
                   strokeWidth={3}
-                  dot={{ fill: '#2563eb', r: 4 }}
-                  activeDot={{ r: 6 }}
+                  dot={{ fill: '#3b82f6', r: 4, strokeWidth: 0 }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Status breakdown */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-6">Application Status</h3>
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+            <h3 className="text-xl font-bold text-slate-950 dark:text-white mb-6">Application Status</h3>
             {statusBreakdown?.length > 0 ? (
               <>
                 <ResponsiveContainer width="100%" height={200}>
@@ -113,10 +123,11 @@ export default function AnalyticsPage() {
                       data={statusBreakdown}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
+                      innerRadius={65}
                       outerRadius={90}
-                      paddingAngle={3}
+                      paddingAngle={5}
                       dataKey="value"
+                      stroke="none"
                     >
                       {statusBreakdown.map((_: any, index: number) => (
                         <Cell key={index} fill={COLORS[index % COLORS.length]} />
@@ -124,32 +135,33 @@ export default function AnalyticsPage() {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#1e293b',
-                        border: 'none',
-                        borderRadius: '8px',
+                        backgroundColor: '#0f172a',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
                         color: '#f8fafc',
                       }}
+                      itemStyle={{ color: '#e2e8f0' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="space-y-2 mt-2">
+                <div className="space-y-3 mt-4">
                   {statusBreakdown.map((item: any, index: number) => (
                     <div key={item.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                        <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                        <span className="text-sm font-medium text-slate-600 dark:text-white/70 capitalize">
                           {STATUS_LABELS[item.name] || item.name}
                         </span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{item.value}</span>
+                      <span className="text-sm font-bold text-slate-950 dark:text-white">{item.value}</span>
                     </div>
                   ))}
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-                <Users className="w-10 h-10 mb-2 opacity-50" />
-                <p className="text-sm">No applications yet</p>
+              <div className="flex flex-col items-center justify-center h-48 text-slate-400 dark:text-white/40">
+                <Users className="w-10 h-10 mb-3 opacity-50" />
+                <p className="text-sm font-medium">No applications yet</p>
               </div>
             )}
           </div>
@@ -157,24 +169,26 @@ export default function AnalyticsPage() {
 
         {/* Top performing jobs */}
         {topJobs?.length > 0 && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-6">Top Performing Jobs</h3>
-            <ResponsiveContainer width="100%" height={250}>
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+            <h3 className="text-xl font-bold text-slate-950 dark:text-white mb-6">Top Performing Jobs</h3>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={topJobs} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="title" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" strokeOpacity={0.2} vertical={false} />
+                <XAxis dataKey="title" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip
+                  cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }}
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: 'none',
-                    borderRadius: '8px',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
                     color: '#f8fafc',
                   }}
+                  itemStyle={{ color: '#e2e8f0' }}
                 />
-                <Legend />
-                <Bar dataKey="applications" fill="#2563eb" radius={[4, 4, 0, 0]} name="Applications" />
-                <Bar dataKey="views" fill="#7c3aed" radius={[4, 4, 0, 0]} name="Views" />
+                <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="circle" />
+                <Bar dataKey="applications" fill="#3b82f6" radius={[6, 6, 0, 0]} name="Applications" barSize={32} />
+                <Bar dataKey="views" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Views" barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
