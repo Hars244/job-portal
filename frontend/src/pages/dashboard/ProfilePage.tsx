@@ -22,17 +22,8 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-const SUGGESTED_SKILLS = [
-  "React", "React Native", "Node.js", "MongoDB", "Python", 
-  "Java", "TypeScript", "PostgreSQL", "AWS", "Docker"
-]
-
-const PHONE_CODES = [
-  { code: '+91', label: 'India' },
-  { code: '+1', label: 'USA/CA' },
-  { code: '+44', label: 'UK' },
-  { code: '+61', label: 'Australia' }
-]
+const SUGGESTED_SKILLS = ["React", "React Native", "Node.js", "MongoDB", "Python", "Java", "TypeScript", "PostgreSQL", "AWS", "Docker"]
+const PHONE_CODES = [{ code: '+91', label: 'India' }, { code: '+1', label: 'USA/CA' }, { code: '+44', label: 'UK' }, { code: '+61', label: 'Australia' }]
 
 export default function ProfilePage() {
   const { user, updateUser } = useAuthStore()
@@ -46,7 +37,6 @@ export default function ProfilePage() {
   
   const suggestionsRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
   const existingLocation = user?.location?.split(', ') || []
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -85,48 +75,27 @@ export default function ProfilePage() {
     }
   }
 
-  const removeSkill = (skill: string) => {
-    setSkills(prev => prev.filter(s => s !== skill))
-  }
-
-  const filteredSkills = SUGGESTED_SKILLS.filter(s => 
-    s.toLowerCase().includes(skillInput.toLowerCase()) && !skills.includes(s)
-  )
+  const removeSkill = (skill: string) => setSkills(prev => prev.filter(s => s !== skill))
+  const filteredSkills = SUGGESTED_SKILLS.filter(s => s.toLowerCase().includes(skillInput.toLowerCase()) && !skills.includes(s))
 
   const handleAIExtract = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setIsAIExtracting(true);
-    
     try {
       const formData = new FormData();
       formData.append('resume', file);
-
-      const res = await api.post('/users/extract-resume-data', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
+      const res = await api.post('/users/extract-resume-data', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       const extractedData = res.data;
-
       if (extractedData.name) setValue('name', extractedData.name);
       if (extractedData.phone) setValue('phone', extractedData.phone);
-      if (extractedData.phoneCode) setValue('phoneCode', extractedData.phoneCode);
       if (extractedData.bio) setValue('bio', extractedData.bio);
-      if (extractedData.experience) setValue('experience', extractedData.experience);
-      if (extractedData.education) setValue('education', extractedData.education);
-      
-      if (extractedData.skills?.length) {
-        setSkills(prev => Array.from(new Set([...prev, ...extractedData.skills])));
-      }
-      
+      if (extractedData.skills?.length) setSkills(prev => Array.from(new Set([...prev, ...extractedData.skills])));
       toast.success('Successfully extracted details from resume!');
-    } catch (error: any) {
-      console.error(error);
-      toast.error('Failed to analyze resume. Please try manually.');
+    } catch {
+      toast.error('Failed to analyze resume.');
     } finally {
       setIsAIExtracting(false);
-      // Reset the input so the user can select the same file again if needed
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -134,370 +103,149 @@ export default function ProfilePage() {
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.type !== 'application/pdf') {
-      toast.error('Only PDF files are allowed')
-      return
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size must be less than 5MB')
-      return
-    }
-
     setUploading(true)
     try {
       const formData = new FormData()
       formData.append('resume', file)
-      const res = await api.post('/users/upload-resume', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      const res = await api.post('/users/upload-resume', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
       updateUser({ resume: res.data.resume })
-      toast.success('Resume uploaded successfully!')
-    } catch {
-      toast.error('Failed to upload resume')
-    } finally {
-      setUploading(false)
-    }
+      toast.success('Resume uploaded!')
+    } catch { toast.error('Failed to upload') } finally { setUploading(false) }
   }
 
   const onSubmit = async (data: FormData) => {
     try {
-      const combinedLocation = [data.country, data.state, data.city].filter(Boolean).join(', ')
-
-      const res = await api.put('/users/profile', {
-        ...data,
-        location: combinedLocation,
-        skills,
-      })
+      const location = [data.country, data.state, data.city].filter(Boolean).join(', ')
+      const res = await api.put('/users/profile', { ...data, location, skills })
       updateUser(res.data.user)
-      toast.success('Profile updated successfully!')
+      toast.success('Profile updated!')
       navigate(-1)
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update profile')
-    }
+    } catch { toast.error('Failed to update') }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  const inputClasses = "w-full px-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 transition-all placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 dark:border-white/10 dark:bg-white/[0.03] dark:text-white dark:placeholder:text-white/30 dark:focus:border-blue-400 dark:focus:bg-white/[0.05] dark:focus:ring-blue-400/10"
+  const labelClasses = "block text-sm font-bold text-slate-950 dark:text-white mb-2"
+  const cardClasses = "rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.02]"
 
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" /> Back
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-[#050816] dark:text-white pb-16">
+      <div className="max-w-3xl mx-auto px-4 py-8 lg:py-12">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-bold text-slate-500 transition-colors hover:text-slate-900 dark:text-white/50 dark:hover:text-white mb-8">
+          <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-blue-50 dark:bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-100 dark:border-blue-500/20">
+              <User className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Profile</h1>
-              <p className="text-gray-500 text-sm">Keep your profile up to date</p>
+              <h1 className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">Edit Profile</h1>
+              <p className="mt-1 font-medium text-slate-500 dark:text-white/60">Keep your professional details updated.</p>
             </div>
           </div>
-          
-          {/* AI Auto-fill Button */}
           {user?.role === 'jobseeker' && (
-            <>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isAIExtracting}
-                type="button"
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl shadow-sm transition-all disabled:opacity-70 font-medium text-sm"
-              >
-                {isAIExtracting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Wand2 className="w-4 h-4" />
-                )}
-                {isAIExtracting ? 'Extracting...' : 'Auto-fill from Resume'}
-              </button>
-              
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                accept=".pdf" 
-                className="hidden" 
-                onChange={handleAIExtract} 
-              />
-            </>
+            <button onClick={() => fileInputRef.current?.click()} disabled={isAIExtracting} className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-3 rounded-2xl font-bold hover:bg-indigo-700 transition shadow-sm">
+              {isAIExtracting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5" />}
+              {isAIExtracting ? 'Extracting...' : 'Auto-fill with AI'}
+            </button>
           )}
+          <input type="file" ref={fileInputRef} accept=".pdf" className="hidden" onChange={handleAIExtract} />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-          {/* Avatar */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
+          <div className={cardClasses}>
             <div className="flex items-center gap-5">
-              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+              <div className="w-20 h-20 bg-slate-950 dark:bg-white rounded-full flex items-center justify-center text-white dark:text-slate-950 text-3xl font-black">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{user?.name}</h3>
-                <p className="text-sm text-gray-500 capitalize">{user?.role}</p>
+                <h3 className="font-bold text-lg text-slate-950 dark:text-white">{user?.name}</h3>
+                <p className="text-sm font-medium text-slate-500 dark:text-white/60 capitalize">{user?.role}</p>
               </div>
             </div>
           </div>
 
-          {/* Basic Info */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 space-y-5">
-            <h2 className="font-semibold text-gray-900 dark:text-white">Personal Information</h2>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Full Name *</label>
-              <input
-                {...register('name')}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-              {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
-            </div>
-
-            {/* Split Phone Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Phone Number</label>
-              <div className="flex gap-2">
-                <select 
-                  {...register('phoneCode')}
-                  className="w-1/3 sm:w-1/4 px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                >
-                  {PHONE_CODES.map(c => (
-                    <option key={c.code} value={c.code}>{c.code} {c.label}</option>
-                  ))}
-                </select>
-                <input
-                  {...register('phone')}
-                  placeholder="904xx xxx61"
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                />
+          <div className={cardClasses}>
+            <h2 className="text-xl font-bold text-slate-950 dark:text-white mb-6">Personal Information</h2>
+            <div className="space-y-5">
+              <div>
+                <label className={labelClasses}>Full Name *</label>
+                <input {...register('name')} className={inputClasses} />
               </div>
-            </div>
-
-            {/* Split Location Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Location</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input
-                  {...register('country')}
-                  placeholder="Country"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                />
-                <input
-                  {...register('state')}
-                  placeholder="State/Region"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                />
-                <input
-                  {...register('city')}
-                  placeholder="City"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                />
+              <div>
+                <label className={labelClasses}>Phone Number</label>
+                <div className="flex gap-3">
+                  <select {...register('phoneCode')} className={`${inputClasses} w-1/3 sm:w-1/4`}>
+                    {PHONE_CODES.map(c => <option key={c.code} value={c.code}>{c.code}</option>)}
+                  </select>
+                  <input {...register('phone')} className={inputClasses} placeholder="904xx xxx61" />
+                </div>
               </div>
-            </div>
-
-            {/* Bio with Live Character Count */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Summary / Bio</label>
-              <textarea
-                {...register('bio')}
-                rows={4}
-                placeholder="Tell recruiters about yourself..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none"
-              />
-              <div className="flex items-center justify-between mt-1.5">
-                <p className="text-xs text-gray-500">Maximum 500 characters</p>
-                <p className={`text-xs font-medium ${bioValue.length > 500 ? 'text-red-500' : 'text-gray-500'}`}>
-                  {bioValue.length} / 500
-                </p>
+              <div>
+                <label className={labelClasses}>Location</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <input {...register('country')} placeholder="Country" className={inputClasses} />
+                  <input {...register('state')} placeholder="State" className={inputClasses} />
+                  <input {...register('city')} placeholder="City" className={inputClasses} />
+                </div>
               </div>
-              {errors.bio && <p className="mt-1 text-sm text-red-500">{errors.bio.message}</p>}
+              <div>
+                <label className={labelClasses}>Summary / Bio</label>
+                <textarea {...register('bio')} rows={4} className={`${inputClasses} resize-none`} />
+                <p className="text-xs font-medium text-slate-400 mt-2 text-right">{bioValue.length} / 500</p>
+              </div>
             </div>
           </div>
 
-          {/* Professional Info */}
           {user?.role === 'jobseeker' && (
-            <>
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 space-y-5">
-                <h2 className="font-semibold text-gray-900 dark:text-white">Professional Details</h2>
-
+            <div className={cardClasses}>
+              <h2 className="text-xl font-bold text-slate-950 dark:text-white mb-6">Professional Details</h2>
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Experience</label>
-                  <input
-                    {...register('experience')}
-                    placeholder="e.g. 3 years of full stack development"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
+                  <label className={labelClasses}>Experience</label>
+                  <input {...register('experience')} className={inputClasses} />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Education</label>
-                  <input
-                    {...register('education')}
-                    placeholder="e.g. B.Tech Computer Science, IIT Mumbai"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                  />
+                  <label className={labelClasses}>Education</label>
+                  <input {...register('education')} className={inputClasses} />
                 </div>
-
-                {/* Skills Autocomplete */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Skills</label>
-                  <div className="relative mb-3" ref={suggestionsRef}>
-                    <div className="flex gap-2">
-                      <input
-                        value={skillInput}
-                        onChange={e => {
-                          setSkillInput(e.target.value)
-                          setShowSuggestions(true)
-                        }}
-                        onFocus={() => setShowSuggestions(true)}
-                        onKeyDown={e => { 
-                          if (e.key === 'Enter') { 
-                            e.preventDefault()
-                            if (filteredSkills.length > 0) {
-                              addSkill(filteredSkills[0])
-                            } else {
-                              addSkill(skillInput) 
-                            }
-                          } 
-                        }}
-                        placeholder="Type a skill..."
-                        className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => addSkill(skillInput)}
-                        className="px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-medium"
-                      >
-                        Add
-                      </button>
-                    </div>
-
-                    {showSuggestions && skillInput && filteredSkills.length > 0 && (
-                      <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-                        {filteredSkills.map(skill => (
-                          <button
-                            key={skill}
-                            type="button"
-                            onClick={() => addSkill(skill)}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                          >
-                            {skill}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  <label className={labelClasses}>Skills</label>
+                  <div className="flex gap-3 mb-3">
+                    <input value={skillInput} onChange={e => { setSkillInput(e.target.value); setShowSuggestions(true) }} className={inputClasses} placeholder="Type a skill..." />
+                    <button type="button" onClick={() => addSkill(skillInput)} className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700">Add</button>
                   </div>
-                  
                   <div className="flex flex-wrap gap-2">
                     {skills.map(skill => (
-                      <span
-                        key={skill}
-                        className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 px-3 py-1.5 rounded-lg text-sm font-medium"
-                      >
-                        {skill}
-                        <button
-                          type="button"
-                          onClick={() => removeSkill(skill)}
-                          className="hover:text-red-500 transition-colors"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
+                      <span key={skill} className="flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl text-sm font-bold">
+                        {skill} <button type="button" onClick={() => removeSkill(skill)}><X className="w-4 h-4" /></button>
                       </span>
                     ))}
                   </div>
                 </div>
               </div>
-
-              {/* Resume Upload */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6">
-                <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Resume</h2>
-                {user?.resume?.url ? (
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <p className="font-medium text-green-700 dark:text-green-400 text-sm flex items-center gap-1">
-                          <Check className="w-4 h-4" /> Resume uploaded
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5">{user.resume.originalName}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!confirm('Delete your resume?')) return
-                          try {
-                            await api.delete('/users/resume')
-                            updateUser({ resume: undefined })
-                            toast.success('Resume deleted!')
-                          } catch {
-                            toast.error('Failed to delete resume')
-                          }
-                        }}
-                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(user.resume!.url)
-                          const blob = await response.blob()
-                          const url = window.URL.createObjectURL(blob)
-                          const a = document.createElement('a')
-                          a.href = url
-                          a.download = user.resume!.originalName || 'resume.pdf'
-                          document.body.appendChild(a)
-                          a.click()
-                          window.URL.revokeObjectURL(url)
-                          document.body.removeChild(a)
-                        } catch {
-                          toast.error('Download failed')
-                        }
-                      }}
-                      className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-sm font-medium transition"
-                    >
-                      ⬇️ Download Resume
-                    </button>
-                  </div>
-                ) : (
-                  <label className="block">
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition-colors bg-gray-50/50 dark:bg-gray-800/50">
-                      {uploading ? (
-                        <div className="flex flex-col items-center gap-2">
-                          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                          <p className="text-sm text-gray-500">Uploading...</p>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-2">
-                          <Upload className="w-8 h-8 text-gray-400" />
-                          <p className="font-medium text-gray-700 dark:text-gray-300">Click to upload resume</p>
-                          <p className="text-xs text-gray-500">PDF only, max 5MB</p>
-                        </div>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      onChange={handleResumeUpload}
-                      disabled={uploading}
-                    />
-                  </label>
-                )}
-              </div>
-            </>
+            </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2"
-          >
-            {isSubmitting ? (
-              <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
-            ) : 'Save Changes'}
+          <div className={cardClasses}>
+            <h2 className="text-xl font-bold text-slate-950 dark:text-white mb-6">Resume</h2>
+            {user?.resume?.url ? (
+              <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
+                <span className="font-medium text-emerald-700 dark:text-emerald-400 text-sm">Resume uploaded ✓</span>
+                <button type="button" onClick={async () => { await api.delete('/users/resume'); updateUser({ resume: undefined }); toast.success('Deleted!') }} className="text-rose-500 font-bold text-sm">Delete</button>
+              </div>
+            ) : (
+              <label className="block border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl p-8 text-center cursor-pointer hover:border-blue-500 transition-colors">
+                <Upload className="w-8 h-8 mx-auto text-slate-400 mb-2" />
+                <p className="font-bold">Click to upload resume</p>
+                <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} disabled={uploading} />
+              </label>
+            )}
+          </div>
+
+          <button type="submit" disabled={isSubmitting} className="w-full bg-slate-950 text-white py-4 rounded-2xl font-bold text-lg hover:bg-slate-800 transition-all dark:bg-white dark:text-slate-950">
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </div>

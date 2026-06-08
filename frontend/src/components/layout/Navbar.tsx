@@ -41,7 +41,7 @@ export default function Navbar() {
   })
   
   return (
-    <nav className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-white dark:bg-[#050816]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Added 'relative' here to anchor the absolutely positioned center nav */}
         <div className="flex items-center justify-between h-16 relative">
@@ -99,7 +99,7 @@ export default function Navbar() {
 
                   {/* Dropdown */}
                   {notifOpen && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#050816] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 py-2 z-50">
                       <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
                         {notifData?.unreadCount > 0 && (
