@@ -1,42 +1,53 @@
-import axios from 'axios'
+import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1',
   withCredentials: true,
-})
+});
 
-// Attach access token to every request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-// Auto-refresh token on 401
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const original = error.config
-    if (error.response?.status === 401 && !original._retry) {
-      original._retry = true
+    const originalRequest = error.config;
+
+    // If error is 401 and we haven't already tried to refresh this request
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Ensure we don't try to refresh if the refresh call ITSELF is what failed
+      if (originalRequest.url === '/auth/refresh') {
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
       try {
-        const { data } = await axios.post(
+        // Attempt to refresh the token
+        await axios.post(
           `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/refresh`,
           {},
           { withCredentials: true }
-        )
-        localStorage.setItem('accessToken', data.accessToken)
-        original.headers.Authorization = `Bearer ${data.accessToken}`
-        return api(original)
-      } catch {
-        localStorage.removeItem('accessToken')
-        window.location.href = '/login'
+        );
+
+        // If refresh succeeds, retry the original request
+        return api(originalRequest);
+        
+      } catch (refreshError) {
+        // 🛑 THE LOOP BREAKER: If refresh fails, log out and redirect safely
+        useAuthStore.getState().logout(); 
+        
+        // Only redirect if we aren't already on the login page
+        if (window.location.pathname !== '/login') {
+            window.location.href = '/login'; 
+        }
+        
+        return Promise.reject(refreshError);
       }
     }
-    return Promise.reject(error)
-  }
-)
 
-export default api
+    return Promise.reject(error);
+  }
+);
+
+export default api;
