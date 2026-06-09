@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useAuthStore } from '../store/authStore'
 import { useQueryClient } from '@tanstack/react-query'
@@ -9,32 +9,35 @@ let socket: Socket | null = null
 export const useSocket = () => {
   const { user, isAuthenticated } = useAuthStore()
   const queryClient = useQueryClient()
+  const initializedRef = useRef(false)
 
   useEffect(() => {
-    if (!isAuthenticated || !user) return
+    if (!isAuthenticated || !user || initializedRef.current) return
+    
+    initializedRef.current = true
 
-    socket = io(import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000', {
-      withCredentials: true,
-    })
+    socket = io(
+      import.meta.env.VITE_API_URL?.replace('/api/v1', '') || 'http://localhost:5000',
+      { withCredentials: true }
+    )
 
     socket.on('connect', () => {
       socket?.emit('register', user.id)
     })
 
     socket.on('notification', (notification: any) => {
-      // Show toast
       toast(notification.message, {
         icon: notification.type === 'status' ? '📋' :
               notification.type === 'application' ? '📩' : '🔔',
         duration: 5000,
       })
-      // Refresh notifications
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     })
 
     return () => {
       socket?.disconnect()
       socket = null
+      initializedRef.current = false
     }
   }, [isAuthenticated, user?.id])
 
