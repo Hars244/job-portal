@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { Response } from 'express';
 
 export const generateAccessToken = (payload: {
   id: string;
@@ -18,18 +19,24 @@ export const generateRefreshToken = (payload: {
   } as jwt.SignOptions);
 };
 
-export const setRefreshTokenCookie = (res: any, token: string): void => {
+export const setRefreshTokenCookie = (res: Response, token: string): void => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   res.cookie('refreshToken', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    secure: isProduction, // Forces HTTPS in production
+    sameSite: isProduction ? 'none' : 'lax', // 'none' allows Vercel -> Render cross-domain
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
 
-export const clearRefreshTokenCookie = (res: any): void => {
+export const clearRefreshTokenCookie = (res: Response): void => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   res.cookie('refreshToken', '', {
     httpOnly: true,
     expires: new Date(0),
+    secure: isProduction, // Must match the settings used during creation
+    sameSite: isProduction ? 'none' : 'lax', // Must match the settings used during creation
   });
 };

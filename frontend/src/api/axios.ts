@@ -6,6 +6,23 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// 🟢 NEW: Request Interceptor - This attaches the Access Token to every request
+api.interceptors.request.use(
+  (config) => {
+    // Grab the token from Zustand state
+    const token = useAuthStore.getState().accessToken;
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 🔵 EXISTING: Response Interceptor - Handles 401s and Refreshes Tokens
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -24,13 +41,25 @@ api.interceptors.response.use(
 
       try {
         // Attempt to refresh the token
-        await axios.post(
+        const refreshResponse = await axios.post(
           `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1'}/auth/refresh`,
           {},
           { withCredentials: true }
         );
 
-        // If refresh succeeds, retry the original request
+        // Extract the NEW token from the backend response
+        const newAccessToken = refreshResponse.data.accessToken;
+        
+        // Save the new token to Zustand so the rest of the app can use it
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser) {
+           useAuthStore.getState().setAuth(currentUser, newAccessToken);
+        }
+
+        // Update the failed request with the NEW token
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        // Retry the original request
         return api(originalRequest);
         
       } catch (refreshError) {
