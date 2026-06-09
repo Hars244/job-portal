@@ -31,10 +31,23 @@ const ProtectedRoute = ({ children, roles }: { children: React.ReactNode; roles?
 
 const GuestRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore()
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <>{children}</>
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
+  return <>{children}</>
 }
 
 export default function App() {
+  const hasHydrated = useAuthStore(s => s._hasHydrated)
+
+  // Wait for persisted auth to load before rendering
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-[#050816] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
   return (
     <Routes>
       {/* Public routes */}
