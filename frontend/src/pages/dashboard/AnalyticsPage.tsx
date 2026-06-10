@@ -58,18 +58,16 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Stats cards */}
+        {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
           {[
-            { label: 'Total Jobs', value: stats?.totalJobs || 0, icon: Briefcase, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10' },
-            { label: 'Applications', value: stats?.totalApplications || 0, icon: Users, color: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' },
-            { label: 'Total Views', value: stats?.totalViews || 0, icon: Eye, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10' },
-            { label: 'Hired', value: stats?.hiredCount || 0, icon: Award, color: 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10' },
-            { label: 'Hiring Rate', value: `${stats?.hiringRate || 0}%`, icon: TrendingUp, color: 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10' },
+            { label: 'Total Jobs', value: stats?.totalJobs || 0 },
+            { label: 'Applications', value: stats?.totalApplications || 0 },
+            { label: 'Total Views', value: stats?.totalViews || 0 },
+            { label: 'Hired', value: stats?.hiredCount || 0 },
+            { label: 'Hiring Rate', value: `${stats?.hiringRate || 0}%` },
           ].map(stat => (
             <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
               <div className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
                 {stat.value}
               </div>

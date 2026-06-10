@@ -263,7 +263,6 @@ export default function JobseekerDashboard() {
         </div>
 
         {/* Profile completion banner */}
-        {/* Profile completion banner */}
         {completion < 100 && (
           <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 mb-10 shadow-sm dark:border-white/10 dark:bg-white/[0.02]">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
@@ -273,7 +272,7 @@ export default function JobseekerDashboard() {
               </div>
               <span className="text-4xl font-black text-blue-600 dark:text-blue-400">{completion}%</span>
             </div>
-            
+
             {/* Progress Bar */}
             <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3 mb-6 overflow-hidden">
               <div
@@ -281,7 +280,7 @@ export default function JobseekerDashboard() {
                 style={{ width: `${completion}%` }}
               />
             </div>
-            
+
             {/* Action Pills - Converted to clickable links */}
             <div className="flex flex-wrap gap-2 sm:gap-3">
               {!user?.phone && (
@@ -312,9 +311,6 @@ export default function JobseekerDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {stats.map(stat => (
             <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
               <div className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
                 {stat.value}
               </div>
@@ -497,7 +493,7 @@ export default function JobseekerDashboard() {
         {/* AI Tools Tab */}
         {activeTab === 'ai' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* Smart Job Match */}
             <div className="rounded-3xl border border-blue-100 bg-white p-6 sm:p-8 shadow-sm dark:border-blue-500/20 dark:bg-white/[0.02]">
               <div className="flex items-center gap-4 mb-8">

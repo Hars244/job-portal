@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search, MapPin, Briefcase, SlidersHorizontal, X, Building2, Clock, DollarSign, Bookmark } from 'lucide-react'
+import { Search, MapPin, Briefcase, SlidersHorizontal, X, Building2, Clock, DollarSign, Bookmark, IndianRupee } from 'lucide-react'
 import api from '../../api/axios'
 import type { Job } from '../../types'
 import { useAuthStore } from '../../store/authStore'
@@ -80,14 +80,14 @@ function JobCard({ job }: { job: Job }) {
           <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 px-3 py-1.5 rounded-full">
             <MapPin className="w-3.5 h-3.5" /> {job.location}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 px-3 py-1.5 rounded-full capitalize">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 px-3 py-1.5 rounded-full capitalize">
             <Briefcase className="w-3.5 h-3.5" /> {job.jobType}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-full capitalize">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 px-3 py-1.5 rounded-full capitalize">
             {job.experienceLevel}
           </span>
           {job.isRemote && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 px-3 py-1.5 rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-white/70 px-3 py-1.5 rounded-full">
               Remote
             </span>
           )}
@@ -97,7 +97,7 @@ function JobCard({ job }: { job: Job }) {
           <div className="flex items-center gap-3">
             {formatSalary(job.salary) && (
               <span className="text-sm font-black text-slate-950 dark:text-white flex items-center gap-1">
-                <DollarSign className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                <IndianRupee className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                 {formatSalary(job.salary)}
               </span>
             )}

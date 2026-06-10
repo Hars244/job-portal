@@ -125,17 +125,18 @@ export default function RecruiterDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[
-            { label: 'Active Jobs', value: activeJobs, icon: Briefcase, color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10' },
-            { label: 'Total Applications', value: totalApplications, icon: Users, color: 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10' },
-            { label: 'Total Views', value: totalViews, icon: Eye, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10' },
-            { label: 'Total Jobs', value: jobs?.length || 0, icon: TrendingUp, color: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10' },
+            { label: 'Active Jobs', value: activeJobs },
+            { label: 'Total Applications', value: totalApplications },
+            { label: 'Total Views', value: totalViews },
+            { label: 'Total Jobs', value: jobs?.length || 0 },
           ].map(stat => (
             <div key={stat.label} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
+              <div className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
+                {stat.value}
               </div>
-              <div className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">{stat.value}</div>
-              <div className="mt-1 text-sm font-medium text-slate-500 dark:text-white/55">{stat.label}</div>
+              <div className="mt-1 text-sm font-medium text-slate-500 dark:text-white/55">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
@@ -152,8 +153,8 @@ export default function RecruiterDashboard() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
-                  ? 'bg-white dark:bg-[#050816] text-slate-950 dark:text-white shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/80'
+                ? 'bg-white dark:bg-[#050816] text-slate-950 dark:text-white shadow-sm'
+                : 'text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/80'
                 }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -343,7 +344,7 @@ export default function RecruiterDashboard() {
                               )}
                             </div>
                           </div>
-                          
+
                           <div className="flex flex-wrap items-center gap-3 lg:justify-end shrink-0">
                             {app.aiScore && (
                               <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 px-3 py-2 rounded-xl">
@@ -415,7 +416,7 @@ export default function RecruiterDashboard() {
                     />
                   </div>
                 ))}
-                
+
                 <div>
                   <label className="block text-sm font-bold text-slate-950 dark:text-white mb-2">Experience Level</label>
                   <select
@@ -428,7 +429,7 @@ export default function RecruiterDashboard() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-bold text-slate-950 dark:text-white mb-2">Job Type</label>
                   <select
@@ -455,11 +456,11 @@ export default function RecruiterDashboard() {
                 <div className="mt-10 bg-slate-50 dark:bg-white/[0.02] rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-white/5 relative overflow-hidden">
                   {/* Decorative background element */}
                   <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-amber-500/10 blur-3xl rounded-full pointer-events-none" />
-                  
+
                   <div className="relative z-10">
                     <h4 className="text-xl font-bold text-slate-950 dark:text-white mb-4">Generated Preview</h4>
                     <p className="text-[15px] text-slate-600 dark:text-white/70 mb-8 leading-relaxed">{generatedJD.description}</p>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                       <div>
                         <h5 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mb-4">
@@ -486,7 +487,7 @@ export default function RecruiterDashboard() {
                         </ul>
                       </div>
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-2 mb-8">
                       {generatedJD.tags?.map((tag: string) => (
                         <span key={tag} className="text-xs font-bold bg-amber-100 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg">
@@ -494,7 +495,7 @@ export default function RecruiterDashboard() {
                         </span>
                       ))}
                     </div>
-                    
+
                     <div className="pt-6 border-t border-slate-200 dark:border-white/10">
                       <Link
                         to="/dashboard/recruiter/post-job"
