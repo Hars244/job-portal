@@ -77,8 +77,10 @@
 ---
 
 ## 📁 Project Structure
+
+```text
 job-portal/
-├── backend/                 # Node.js + Express API
+├── backend/                # Node.js + Express API
 │   ├── src/
 │   │   ├── config/         # DB, Cloudinary config
 │   │   ├── controllers/    # Route controllers
@@ -94,18 +96,17 @@ job-portal/
 │   └── package.json
 │
 └── frontend/               # React + Vite
-├── src/
-│   ├── api/            # Axios instance
-│   ├── components/     # Reusable components
-│   ├── hooks/          # Custom React hooks
-│   ├── pages/          # All pages
-│   ├── store/          # Zustand auth store
-│   ├── types/          # TypeScript interfaces
-│   └── utils/          # Helper functions
-├── .env.example
-└── package.json
-
----
+    ├── src/
+    │   ├── api/            # Axios instance
+    │   ├── components/     # Reusable components
+    │   ├── hooks/          # Custom React hooks
+    │   ├── pages/          # All pages
+    │   ├── store/          # Zustand auth store
+    │   ├── types/          # TypeScript interfaces
+    │   └── utils/          # Helper functions
+    ├── .env.example
+    └── package.json
+```
 
 ## ⚙️ Getting Started
 
